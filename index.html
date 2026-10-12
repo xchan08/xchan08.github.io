@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loading bio...</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0b0e14; --card: #12161f; --card-hover: #171c28; --border: #1f2633;
+    --fg: #e8ecf3; --muted: #8b94a7; --accent: #4f8cff; --accent2: #34d399;
+    --warn: #fbbf24; --radius: 18px;
+  }
+  body { font-family: "Inter", -apple-system, sans-serif; background: var(--bg); color: var(--fg); line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  h1,h2,h3,.display { font-family: "Space Grotesk", sans-serif; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 40px 20px 80px; }
+  nav { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; max-width: 1080px; margin: 0 auto; }
+  .logo { font-family: "Space Grotesk"; font-weight: 700; font-size: 18px; }
+  .logo span { color: var(--accent); }
+  nav .links a { color: var(--muted); text-decoration: none; font-size: 14px; margin-left: 22px; transition: color .2s; }
+  nav .links a:hover { color: var(--fg); }
+  .bento { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 26px; transition: transform .25s ease, border-color .25s ease, background .25s; }
+  .card:hover { transform: translateY(-3px); border-color: #2c3a55; background: var(--card-hover); }
+  .card h3 { font-size: 15px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 14px; font-weight: 600; }
+  .hero { grid-column: span 4; display: flex; gap: 28px; align-items: center; padding: 40px; position: relative; overflow: hidden; }
+  .hero::before { content: ""; position: absolute; top: -120px; right: -80px; width: 340px; height: 340px; background: radial-gradient(circle, rgba(79,140,255,.18), transparent 70%); pointer-events: none; }
+  .avatar { width: 108px; height: 108px; border-radius: 50%; flex-shrink: 0; background: linear-gradient(135deg, var(--accent), #a855f7); display: flex; align-items: center; justify-content: center; font-family: "Space Grotesk"; font-weight: 700; font-size: 38px; color: #fff; border: 3px solid rgba(255,255,255,.12); overflow: hidden; }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .hero h1 { font-size: clamp(30px, 4.5vw, 44px); font-weight: 700; letter-spacing: -.02em; }
+  .hero .role { color: var(--accent); font-weight: 600; font-size: 17px; margin-top: 4px; }
+  .hero .tagline { color: var(--muted); margin-top: 10px; max-width: 560px; font-size: 15.5px; }
+  .hero .loc { color: var(--muted); font-size: 13px; margin-top: 8px; letter-spacing: .04em; text-transform: uppercase; }
+  .hero .cta { margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn { display: inline-block; padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; text-decoration: none; transition: all .2s; cursor: pointer; border: none; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #6ba0ff; transform: translateY(-1px); }
+  .btn-ghost { background: transparent; color: var(--fg); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .stat { grid-column: span 1; text-align: left; }
+  .stat .num { font-family: "Space Grotesk"; font-size: 34px; font-weight: 700; }
+  .stat .num.c-blue { color: var(--accent); } .stat .num.c-green { color: var(--accent2); }
+  .stat .num.c-amber { color: var(--warn); } .stat .num.c-white { color: var(--fg); }
+  .stat .lbl { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .about { grid-column: span 2; }
+  .about p { color: var(--muted); font-size: 14.5px; }
+  .about p strong { color: var(--fg); }
+  .contact { grid-column: span 2; }
+  .contact a.row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; color: var(--fg); text-decoration: none; font-size: 14.5px; transition: background .2s; word-break: break-all; }
+  .contact a.row:hover { background: #1a2231; }
+  .contact .ic { width: 30px; height: 30px; border-radius: 8px; background: #1a2231; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .skills { grid-column: span 4; }
+  .skill-filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .chip { padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 500; cursor: pointer; background: #1a2231; color: var(--muted); border: 1px solid var(--border); transition: all .2s; }
+  .chip:hover { color: var(--fg); }
+  .chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .skill-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .skill { background: #161b26; border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; transition: all .25s; }
+  .skill.hidden { display: none; }
+  .skill:hover { border-color: var(--accent); }
+  .skill .name { font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; gap: 8px; }
+  .skill .name em { font-style: normal; color: var(--muted); font-size: 12px; font-weight: 500; white-space: nowrap; }
+  .bar { height: 5px; background: #232b3b; border-radius: 99px; margin-top: 9px; overflow: hidden; }
+  .bar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0; transition: width 1s ease; }
+  .exp { grid-column: span 4; }
+  .job { display: grid; grid-template-columns: 150px 1fr; gap: 20px; padding: 20px 0; border-top: 1px solid var(--border); }
+  .job:first-of-type { border-top: none; }
+  .job .when { color: var(--muted); font-size: 13.5px; font-family: "Space Grotesk"; }
+  .job .role-t { font-weight: 600; font-size: 16px; }
+  .job .co { color: var(--accent); font-size: 14px; margin: 2px 0 8px; font-weight: 500; }
+  .job ul { margin-left: 18px; color: var(--muted); font-size: 14px; }
+  .job li { margin-bottom: 4px; }
+  .job li strong { color: var(--accent2); font-weight: 600; }
+  .achv { grid-column: span 4; }
+  .achv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .trophy { background: #161b26; border: 1px solid var(--border); border-radius: 14px; padding: 18px; transition: all .25s; cursor: default; }
+  .trophy:hover { border-color: var(--warn); transform: translateY(-2px); }
+  .trophy .yr { font-family: "Space Grotesk"; color: var(--warn); font-weight: 700; font-size: 13px; }
+  .trophy .t { font-weight: 600; font-size: 15px; margin: 6px 0 6px; }
+  .trophy .d { color: var(--muted); font-size: 13.5px; }
+  footer { text-align: center; color: var(--muted); font-size: 13px; margin-top: 40px; }
+  footer .dot { color: var(--accent); }
+  .boot { text-align: center; color: var(--muted); padding: 80px 20px; font-size: 14px; }
+  .boot.err { color: var(--warn); max-width: 640px; margin: 0 auto; text-align: left; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 24px; }
+  .boot.err code { color: var(--fg); background: #1a2231; padding: 2px 6px; border-radius: 6px; }
+  @media (max-width: 820px) {
+    .bento { grid-template-columns: repeat(2, 1fr); }
+    .hero, .skills, .exp, .achv, .about, .contact { grid-column: span 2; }
+    .hero { flex-direction: column; text-align: center; }
+    .hero .cta { justify-content: center; }
+    .achv-grid { grid-template-columns: 1fr; }
+    .job { grid-template-columns: 1fr; gap: 4px; }
+  }
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo" id="logo">bio<span>.</span></div>
+  <div class="links" id="navlinks"></div>
+</nav>
+<div class="wrap">
+  <div class="boot" id="boot">loading bio from sheet&hellip;</div>
+  <div class="bento" id="grid" style="display:none;"></div>
+  <footer id="foot" style="display:none;"></footer>
+</div>
+<script>
+/* ============ CONFIG ============ */
+/* Data lives in ./data/<Tab>.csv, mirrored from the published Sheet by
+   .github/workflows/sync-sheet.yml (hourly cron + manual "Run workflow").
+   Same-origin fetch: no CORS, no third-party proxy. */
+var TABS = ['Profile', 'Stats', 'Skills', 'Experience', 'Achievements'];
+/* test hook: window.__CSV_FIXTURE = { Profile: 'csv text', ... } bypasses network */
+
+function csvUrl(tab) {
+  return 'data/' + encodeURIComponent(tab) + '.csv';
+}
+
+/* RFC4180-ish CSV parser (quotes, commas, embedded newlines, CRLF) */
+function parseCSV(text) {
+  var rows = [], row = [], field = '', i = 0, inQ = false, n = text.length;
+  while (i < n) {
+    var c = text[i];
+    if (inQ) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { field += '"'; i += 2; continue; }
+        inQ = false; i++; continue;
+      }
+      field += c; i++; continue;
+    }
+    if (c === '"') { inQ = true; i++; continue; }
+    if (c === ',') { row.push(field); field = ''; i++; continue; }
+    if (c === '\r') { i++; continue; }
+    if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; i++; continue; }
+    field += c; i++;
+  }
+  if (field !== '' || row.length) { row.push(field); rows.push(row); }
+  return rows.filter(function (r) { return !(r.length === 1 && r[0] === ''); });
+}
+
+function fetchTab(tab) {
+  if (window.__CSV_FIXTURE && window.__CSV_FIXTURE[tab]) {
+    return Promise.resolve(window.__CSV_FIXTURE[tab]);
+  }
+  return fetch(csvUrl(tab)).then(function (r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status + ' for tab ' + tab);
+    return r.text();
+  });
+}
+
+function s(x) { return (x === null || x === undefined) ? '' : String(x).trim(); }
+function autoLevel(p) { return p >= 90 ? 'Expert' : p >= 75 ? 'Advanced' : p >= 60 ? 'Intermediate' : 'Familiar'; }
+
+function buildData(tabs) {
+  var out = { profile: {}, stats: [], skills: [], experience: [], achievements: [] };
+  var body = function (name) { return (tabs[name] || []).slice(1); };
+
+  body('Profile').forEach(function (r) { if (s(r[0])) out.profile[s(r[0])] = s(r[1]); });
+  body('Stats').forEach(function (r) {
+    if (!s(r[0])) return;
+    out.stats.push({ value: s(r[0]), label: s(r[1]), color: s(r[2]) });
+  });
+  body('Skills').forEach(function (r) {
+    if (!s(r[0])) return;
+    var pct = parseInt(r[2], 10); if (isNaN(pct)) pct = 75;
+    pct = Math.max(5, Math.min(100, pct));
+    out.skills.push({ name: s(r[0]), category: s(r[1]) || 'Other', percent: pct, level: s(r[3]) || autoLevel(pct) });
+  });
+  body('Experience').forEach(function (r) {
+    if (!s(r[1])) return;
+    var bullets = s(r[3]).split('\n').map(function (b) { return b.trim(); }).filter(Boolean);
+    out.experience.push({ dates: s(r[0]), role: s(r[1]), company: s(r[2]), bullets: bullets });
+  });
+  body('Achievements').forEach(function (r) {
+    if (!s(r[1])) return;
+    out.achievements.push({ year: s(r[0]), title: s(r[1]), description: s(r[2]) });
+  });
+  return out;
+}
+
+/* ============ RENDER (same Bento engine as the GAS version) ============ */
+function esc(t) {
+  return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function rich(t) { return esc(t).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>'); }
+function initials(name) {
+  var p = String(name || '').trim().split(/\s+/);
+  var o = (p[0] || '?').charAt(0);
+  if (p.length > 1) o += p[p.length - 1].charAt(0);
+  return o.toUpperCase();
+}
+
+function render(DATA) {
+  var P = DATA.profile || {};
+  var CYCLE = ['c-blue', 'c-green', 'c-amber', 'c-white'];
+  var IC = { email: '\u2709', linkedin: 'in', github: '&gt;_', call: '\u260E' };
+
+  var navItems = [];
+  if ((DATA.skills || []).length) navItems.push(['#skills', 'Skills']);
+  if ((DATA.experience || []).length) navItems.push(['#experience', 'Experience']);
+  if ((DATA.achievements || []).length) navItems.push(['#achievements', 'Wins']);
+  if (P.email || P.linkedin || P.github || P.call_url) navItems.push(['#contact', 'Contact']);
+  document.getElementById('navlinks').innerHTML = navItems.map(function (n) {
+    return '<a href="' + n[0] + '">' + n[1] + '</a>';
+  }).join('');
+  var shortName = (P.name || 'bio').toLowerCase().replace(/[^a-z0-9]+/g, '').slice(0, 10) || 'bio';
+  document.getElementById('logo').innerHTML = esc(shortName) + '<span>.</span>';
+  document.title = (P.name || 'Bio') + ' - ' + (P.role || '');
+
+  var H = [];
+  H.push('<div class="card hero">' +
+    '<div class="avatar">' + (P.avatar_url ? '<img src="' + esc(P.avatar_url) + '" alt="">' : esc(initials(P.name))) + '</div>' +
+    '<div><h1>' + esc(P.name || 'Your Name') + '</h1>' +
+    (P.role ? '<div class="role">' + esc(P.role) + '</div>' : '') +
+    (P.tagline ? '<p class="tagline">' + rich(P.tagline) + '</p>' : '') +
+    (P.location ? '<div class="loc">' + esc(P.location) + '</div>' : '') +
+    '<div class="cta"><a class="btn btn-primary" href="#contact">Get in touch</a>' +
+    (P.resume_url ? '<a class="btn btn-ghost" href="' + esc(P.resume_url) + '" target="_blank" rel="noopener">Download Resume</a>' : '') +
+    '</div></div></div>');
+
+  (DATA.stats || []).slice(0, 4).forEach(function (st, i) {
+    var cls = st.color ? 'c-' + String(st.color).toLowerCase() : CYCLE[i % 4];
+    if (['c-blue', 'c-green', 'c-amber', 'c-white'].indexOf(cls) < 0) cls = CYCLE[i % 4];
+    H.push('<div class="card stat"><div class="num ' + cls + '">' + esc(st.value) + '</div><div class="lbl">' + esc(st.label) + '</div></div>');
+  });
+
+  var contactRows = [];
+  if (P.email) contactRows.push(['mailto:' + esc(P.email), IC.email, esc(P.email)]);
+  if (P.linkedin) contactRows.push([esc(P.linkedin), IC.linkedin, esc(P.linkedin).replace(/^https?:\/\//, '')]);
+  if (P.github) contactRows.push([esc(P.github), IC.github, esc(P.github).replace(/^https?:\/\//, '')]);
+  if (P.call_url) contactRows.push([esc(P.call_url), IC.call, 'Book a call']);
+  if (P.about) H.push('<div class="card about"><h3>About</h3><p>' + rich(P.about) + '</p></div>');
+  if (contactRows.length) {
+    H.push('<div class="card contact" id="contact"><h3>Contact</h3>' + contactRows.map(function (r) {
+      return '<a class="row" href="' + r[0] + '" target="_blank" rel="noopener"><div class="ic">' + r[1] + '</div> ' + r[2] + '</a>';
+    }).join('') + '</div>');
+  }
+
+  if ((DATA.skills || []).length) {
+    var cats = [];
+    DATA.skills.forEach(function (sk) { if (cats.indexOf(sk.category) < 0) cats.push(sk.category); });
+    H.push('<div class="card skills" id="skills"><h3>Skills</h3><div class="skill-filters">' +
+      '<button class="chip active" data-f="all">All</button>' +
+      cats.map(function (c) { return '<button class="chip" data-f="' + esc(c) + '">' + esc(c) + '</button>'; }).join('') +
+      '</div><div class="skill-grid">' +
+      DATA.skills.map(function (sk) {
+        return '<div class="skill" data-c="' + esc(sk.category) + '"><div class="name">' + esc(sk.name) +
+          ' <em>' + esc(sk.level) + '</em></div><div class="bar"><i data-w="' + sk.percent + '%"></i></div></div>';
+      }).join('') + '</div></div>');
+  }
+
+  if ((DATA.experience || []).length) {
+    H.push('<div class="card exp" id="experience"><h3>Experience</h3>' +
+      DATA.experience.map(function (j) {
+        return '<div class="job">' + (j.dates ? '<div class="when">' + esc(j.dates) + '</div>' : '<div></div>') +
+          '<div><div class="role-t">' + esc(j.role) + '</div>' +
+          (j.company ? '<div class="co">' + esc(j.company) + '</div>' : '') +
+          (j.bullets.length ? '<ul>' + j.bullets.map(function (b) { return '<li>' + rich(b) + '</li>'; }).join('') + '</ul>' : '') +
+          '</div></div>';
+      }).join('') + '</div>');
+  }
+
+  if ((DATA.achievements || []).length) {
+    H.push('<div class="card achv" id="achievements"><h3>Achievements</h3><div class="achv-grid">' +
+      DATA.achievements.map(function (a) {
+        return '<div class="trophy">' + (a.year ? '<div class="yr">' + esc(a.year) + '</div>' : '') +
+          '<div class="t">' + esc(a.title) + '</div>' +
+          (a.description ? '<div class="d">' + rich(a.description) + '</div>' : '') + '</div>';
+      }).join('') + '</div></div>');
+  }
+
+  document.getElementById('grid').innerHTML = H.join('');
+  document.getElementById('foot').innerHTML =
+    'built with <span class="dot">&bull;</span> Google Sheets as CMS <span class="dot">&bull;</span> &copy; ' +
+    new Date().getFullYear() + ' ' + esc(P.name || '');
+  document.getElementById('boot').style.display = 'none';
+  document.getElementById('grid').style.display = '';
+  document.getElementById('foot').style.display = '';
+
+  document.querySelectorAll('.chip').forEach(function (c) {
+    c.addEventListener('click', function () {
+      document.querySelectorAll('.chip').forEach(function (x) { x.classList.remove('active'); });
+      c.classList.add('active');
+      var f = c.getAttribute('data-f');
+      document.querySelectorAll('.skill').forEach(function (sk) {
+        sk.classList.toggle('hidden', f !== 'all' && sk.getAttribute('data-c') !== f);
+      });
+    });
+  });
+  setTimeout(function () {
+    document.querySelectorAll('.bar i').forEach(function (b) { b.style.width = b.getAttribute('data-w'); });
+  }, 200);
+}
+
+function bootError(msg) {
+  var b = document.getElementById('boot');
+  b.className = 'boot err';
+  b.innerHTML = '<strong>Could not load the bio data.</strong><br>' + msg +
+    '<br><br>Checklist: (1) <code>data/*.csv</code> files exist next to index.html ' +
+    '(the sync workflow creates them); (2) you are online. See GUIDE.md part C.';
+}
+
+Promise.all(TABS.map(function (t) { return fetchTab(t).catch(function () { return ''; }); }))
+  .then(function (texts) {
+    var tabs = {};
+    TABS.forEach(function (t, i) { tabs[t] = texts[i] ? parseCSV(texts[i]) : []; });
+    var data = buildData(tabs);
+    if (!data.profile.name) { bootError('The Profile tab returned no <code>name</code> row.'); return; }
+    render(data);
+  })
+  .catch(function (e) { bootError(esc(String(e && e.message || e))); });
+</script>
+</body>
+</html>
