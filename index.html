@@ -191,6 +191,19 @@ function initials(name) {
   if (p.length > 1) o += p[p.length - 1].charAt(0);
   return o.toUpperCase();
 }
+/* Security: scheme allowlist for any sheet-sourced URL.
+   Anything else (javascript:, data:, vbscript:) yields '' -> the element is hidden, not rendered. */
+function safeUrl(u) {
+  var t = String(u == null ? '' : u).trim();
+  if (!t) return '';
+  if (/^(https?:\/\/|mailto:|tel:)/i.test(t)) return t;
+  if (t.indexOf(':') < 0 && /^[a-z0-9.-]+\.[a-z]{2,}([\/?#].*)?$/i.test(t)) return 'https://' + t;
+  return '';
+}
+function safeMail(e) {
+  var t = String(e == null ? '' : e).trim();
+  return /^[^@\s<>"]+@[^@\s<>"]+\.[a-z]{2,}$/i.test(t) ? t : '';
+}
 
 function render(DATA) {
   var P = DATA.profile || {};
@@ -210,27 +223,31 @@ function render(DATA) {
   document.title = (P.name || 'Bio') + ' - ' + (P.role || '');
 
   var H = [];
+  var avatar = safeUrl(P.avatar_url);
+  var resume = safeUrl(P.resume_url);
   H.push('<div class="card hero">' +
-    '<div class="avatar">' + (P.avatar_url ? '<img src="' + esc(P.avatar_url) + '" alt="">' : esc(initials(P.name))) + '</div>' +
+    '<div class="avatar">' + (avatar ? '<img src="' + esc(avatar) + '" alt="">' : esc(initials(P.name))) + '</div>' +
     '<div><h1>' + esc(P.name || 'Your Name') + '</h1>' +
     (P.role ? '<div class="role">' + esc(P.role) + '</div>' : '') +
     (P.tagline ? '<p class="tagline">' + rich(P.tagline) + '</p>' : '') +
     (P.location ? '<div class="loc">' + esc(P.location) + '</div>' : '') +
     '<div class="cta"><a class="btn btn-primary" href="#contact">Get in touch</a>' +
-    (P.resume_url ? '<a class="btn btn-ghost" href="' + esc(P.resume_url) + '" target="_blank" rel="noopener">Download Resume</a>' : '') +
+    (resume ? '<a class="btn btn-ghost" href="' + esc(resume) + '" target="_blank" rel="noopener">Download Resume</a>' : '') +
     '</div></div></div>');
 
-  (DATA.stats || []).slice(0, 4).forEach(function (st, i) {
+  (DATA.stats || []).slice(0, 8).forEach(function (st, i) {
     var cls = st.color ? 'c-' + String(st.color).toLowerCase() : CYCLE[i % 4];
     if (['c-blue', 'c-green', 'c-amber', 'c-white'].indexOf(cls) < 0) cls = CYCLE[i % 4];
     H.push('<div class="card stat"><div class="num ' + cls + '">' + esc(st.value) + '</div><div class="lbl">' + esc(st.label) + '</div></div>');
   });
 
   var contactRows = [];
-  if (P.email) contactRows.push(['mailto:' + esc(P.email), IC.email, esc(P.email)]);
-  if (P.linkedin) contactRows.push([esc(P.linkedin), IC.linkedin, esc(P.linkedin).replace(/^https?:\/\//, '')]);
-  if (P.github) contactRows.push([esc(P.github), IC.github, esc(P.github).replace(/^https?:\/\//, '')]);
-  if (P.call_url) contactRows.push([esc(P.call_url), IC.call, 'Book a call']);
+  var mail = safeMail(P.email);
+  var li = safeUrl(P.linkedin), gh = safeUrl(P.github), cu = safeUrl(P.call_url);
+  if (mail) contactRows.push(['mailto:' + esc(mail), IC.email, esc(mail)]);
+  if (li) contactRows.push([esc(li), IC.linkedin, esc(li).replace(/^https?:\/\//, '')]);
+  if (gh) contactRows.push([esc(gh), IC.github, esc(gh).replace(/^https?:\/\//, '')]);
+  if (cu) contactRows.push([esc(cu), IC.call, 'Book a call']);
   if (P.about) H.push('<div class="card about"><h3>About</h3><p>' + rich(P.about) + '</p></div>');
   if (contactRows.length) {
     H.push('<div class="card contact" id="contact"><h3>Contact</h3>' + contactRows.map(function (r) {
@@ -273,7 +290,7 @@ function render(DATA) {
 
   document.getElementById('grid').innerHTML = H.join('');
   document.getElementById('foot').innerHTML =
-    'All Rights Reserved <span class="dot">&bull;</span> &copy; ' +
+    'built with <span class="dot">&bull;</span> Google Sheets as CMS <span class="dot">&bull;</span> &copy; ' +
     new Date().getFullYear() + ' ' + esc(P.name || '');
   document.getElementById('boot').style.display = 'none';
   document.getElementById('grid').style.display = '';
