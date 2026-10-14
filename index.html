@@ -85,6 +85,36 @@
   .boot { text-align: center; color: var(--muted); padding: 80px 20px; font-size: 14px; }
   .boot.err { color: var(--warn); max-width: 640px; margin: 0 auto; text-align: left; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 24px; }
   .boot.err code { color: var(--fg); background: #1a2231; padding: 2px 6px; border-radius: 6px; }
+  /* riddles */
+  .riddles { grid-column: span 4; }
+  .rid-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .rid { background: #161b26; border: 1px solid var(--border); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; }
+  .rid.wide { grid-column: span 2; }
+  .rid .badge { font-family: "Space Grotesk"; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--warn); margin-bottom: 8px; }
+  .rid .rt { font-weight: 600; font-size: 15px; margin-bottom: 8px; }
+  .rid .rp { color: var(--muted); font-size: 13.5px; white-space: pre-line; margin-bottom: 12px; flex: 1; }
+  .rid .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .rid input { background: #0f1420; border: 1px solid var(--border); color: var(--fg); border-radius: 8px; padding: 8px 12px; font-size: 14px; flex: 1; min-width: 140px; font-family: inherit; }
+  .rid input:focus { outline: none; border-color: var(--accent); }
+  .rbtn { padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: #1a2231; color: var(--fg); transition: all .2s; font-family: inherit; }
+  .rbtn:hover { border-color: var(--accent); color: var(--accent); }
+  .rbtn.go { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .rbtn.go:hover { background: #6ba0ff; }
+  .rid .res { margin-top: 10px; font-size: 13.5px; color: var(--muted); white-space: pre-line; }
+  .rid .res.ok { color: var(--accent2); font-weight: 600; }
+  .rid .res.no { color: var(--warn); }
+  .simgrid { display: grid; grid-template-columns: repeat(25, 1fr); gap: 3px; margin: 12px 0; }
+  .simgrid i { aspect-ratio: 1; background: #0f1420; border-radius: 3px; transition: background .12s; }
+  .simgrid i.on { background: var(--accent); }
+  .simgrid i.hit { background: var(--accent2); }
+  .simstats { font-family: "Space Grotesk"; font-size: 13.5px; color: var(--muted); display: flex; gap: 18px; flex-wrap: wrap; margin-top: 6px; }
+  .simstats b { color: var(--fg); font-weight: 700; }
+  .simstats .g { color: var(--accent2); } .simstats .r { color: var(--warn); }
+  @media (max-width: 820px) {
+    .rid-grid { grid-template-columns: 1fr; }
+    .rid.wide { grid-column: span 1; }
+    .simgrid { grid-template-columns: repeat(20, 1fr); }
+  }
   @media (max-width: 820px) {
     .bento { grid-template-columns: repeat(2, 1fr); }
     .hero, .skills, .exp, .achv, .about, .contact { grid-column: span 2; }
@@ -110,7 +140,7 @@
 /* Data lives in ./data/<Tab>.csv, mirrored from the published Sheet by
    .github/workflows/sync-sheet.yml (hourly cron + manual "Run workflow").
    Same-origin fetch: no CORS, no third-party proxy. */
-var TABS = ['Profile', 'Stats', 'Skills', 'Experience', 'Achievements'];
+var TABS = ['Profile', 'Stats', 'Skills', 'Experience', 'Achievements', 'Riddles'];
 /* test hook: window.__CSV_FIXTURE = { Profile: 'csv text', ... } bypasses network */
 
 function csvUrl(tab) {
@@ -153,7 +183,7 @@ function s(x) { return (x === null || x === undefined) ? '' : String(x).trim(); 
 function autoLevel(p) { return p >= 90 ? 'Expert' : p >= 75 ? 'Advanced' : p >= 60 ? 'Intermediate' : 'Familiar'; }
 
 function buildData(tabs) {
-  var out = { profile: {}, stats: [], skills: [], experience: [], achievements: [] };
+  var out = { profile: {}, stats: [], skills: [], experience: [], achievements: [], riddles: [] };
   var body = function (name) { return (tabs[name] || []).slice(1); };
 
   body('Profile').forEach(function (r) { if (s(r[0])) out.profile[s(r[0])] = s(r[1]); });
@@ -175,6 +205,12 @@ function buildData(tabs) {
   body('Achievements').forEach(function (r) {
     if (!s(r[1])) return;
     out.achievements.push({ year: s(r[0]), title: s(r[1]), description: s(r[2]) });
+  });
+  // Riddles: type,title,prompt,answer,hint,extra
+  body('Riddles').forEach(function (r) {
+    if (!s(r[1])) return;
+    out.riddles.push({ type: s(r[0]) || 'quiz', title: s(r[1]), prompt: s(r[2]),
+      answer: s(r[3]), hint: s(r[4]), extra: s(r[5]) });
   });
   return out;
 }
@@ -214,6 +250,7 @@ function render(DATA) {
   if ((DATA.skills || []).length) navItems.push(['#skills', 'Skills']);
   if ((DATA.experience || []).length) navItems.push(['#experience', 'Experience']);
   if ((DATA.achievements || []).length) navItems.push(['#achievements', 'Wins']);
+  if ((DATA.riddles || []).length) navItems.push(['#riddles', 'Riddles']);
   if (P.email || P.linkedin || P.github || P.call_url) navItems.push(['#contact', 'Contact']);
   document.getElementById('navlinks').innerHTML = navItems.map(function (n) {
     return '<a href="' + n[0] + '">' + n[1] + '</a>';
@@ -288,7 +325,31 @@ function render(DATA) {
       }).join('') + '</div></div>');
   }
 
+  if ((DATA.riddles || []).length) {
+    H.push('<div class="card riddles" id="riddles"><h3>Wanna solve my riddle?</h3><div class="rid-grid">' +
+      DATA.riddles.map(function (rd, i) {
+        var wide = rd.type === 'prisoners' ? ' wide' : '';
+        return '<div class="rid' + wide + '" data-i="' + i + '">' +
+          '<div class="badge">' + esc(rd.type === 'prisoners' ? 'interactive sim' : 'riddle') + '</div>' +
+          '<div class="rt">' + esc(rd.title) + '</div>' +
+          '<div class="rp">' + rich(rd.prompt) + '</div>' +
+          (rd.type === 'prisoners'
+            ? '<div class="simgrid" id="sim-' + i + '"></div>' +
+              '<div class="row"><button class="rbtn go" data-act="loop" data-i="' + i + '">Run loop strategy</button>' +
+              '<button class="rbtn" data-act="rand" data-i="' + i + '">Run random strategy</button>' +
+              '<button class="rbtn" data-act="why" data-i="' + i + '">Why does it work?</button></div>' +
+              '<div class="simstats" id="sims-' + i + '"></div>'
+            : '<div class="row"><input type="text" id="ans-' + i + '" placeholder="Your answer..." autocomplete="off">' +
+              '<button class="rbtn go" data-act="check" data-i="' + i + '">Check</button>' +
+              '<button class="rbtn" data-act="hint" data-i="' + i + '">Hint</button>' +
+              '<button class="rbtn" data-act="show" data-i="' + i + '">Reveal</button></div>') +
+          '<div class="res" id="res-' + i + '"></div>' +
+          '</div>';
+      }).join('') + '</div></div>');
+  }
+
   document.getElementById('grid').innerHTML = H.join('');
+  renderRiddles(DATA.riddles || []);
   document.getElementById('foot').innerHTML =
     'built with <span class="dot">&bull;</span> Google Sheets as CMS <span class="dot">&bull;</span> &copy; ' +
     new Date().getFullYear() + ' ' + esc(P.name || '');
@@ -309,6 +370,128 @@ function render(DATA) {
   setTimeout(function () {
     document.querySelectorAll('.bar i').forEach(function (b) { b.style.width = b.getAttribute('data-w'); });
   }, 200);
+}
+
+/* ============ RIDDLES: game engines ============ */
+var RID = [];           // riddle data (set by renderRiddles)
+
+function renderRiddles(list) {
+  RID = list;
+  list.forEach(function (rd, i) {
+    if (rd.type === 'prisoners') drawSimGrid(i, null, null);
+  });
+  document.querySelectorAll('.rbtn').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var i = parseInt(b.getAttribute('data-i'), 10);
+      var act = b.getAttribute('data-act');
+      var rd = RID[i];
+      var res = document.getElementById('res-' + i);
+      if (act === 'loop' || act === 'rand') runPrisoners(i, act === 'loop');
+      else if (act === 'why') {
+        res.className = 'res';
+        res.textContent = rd.extra || 'Each prisoner follows the permutation cycle starting at their own number. Cycles longer than 50 doom everyone; a random permutation of 100 elements has a cycle >50 only ~69% of the time - hence ~31% success, vs (1/2)^100 for random guesses.';
+      }
+      else if (act === 'check') {
+        var norm = function (x) { return String(x == null ? '' : x).trim().toLowerCase(); };
+        var num = function (x) {
+          var m = String(x).replace(/[^0-9.\-]/g, '').match(/-?\d+(\.\d+)?/);
+          return m ? parseFloat(m[0]) : NaN;
+        };
+        var u = norm((document.getElementById('ans-' + i) || {}).value);
+        var vals = String(rd.answer || '').split('|').map(norm).filter(Boolean);
+        var ok = vals.some(function (v) {
+          if (u === v) return true;
+          if (v.length >= 4 && u.indexOf(v) >= 0) return true;
+          var nv = num(v), nu = num(u);
+          return !isNaN(nv) && !isNaN(nu) && Math.abs(nv - nu) < 1e-9;
+        });
+        res.className = 'res ' + (ok ? 'ok' : 'no');
+        res.textContent = ok ? 'Correct! ' + rd.title + ' - solved.' : 'Not quite. Try again, or take a hint.';
+      }
+      else if (act === 'hint') { res.className = 'res'; res.textContent = 'Hint: ' + (rd.hint || 'think in cycles and unit economics.'); }
+      else if (act === 'show') { res.className = 'res ok'; res.textContent = 'Answer: ' + String(rd.answer || '').split('|')[0]; }
+    });
+  });
+  // Enter key submits the quiz input
+  document.querySelectorAll('.rid input').forEach(function (inp) {
+    inp.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        var i = inp.id.replace('ans-', '');
+        var btn = document.querySelector('.rbtn[data-act="check"][data-i="' + i + '"]');
+        if (btn) btn.click();
+      }
+    });
+  });
+}
+
+function drawSimGrid(i, boxes, hits) {
+  var g = document.getElementById('sim-' + i);
+  if (!g) return;
+  var cells = [];
+  for (var k = 0; k < 100; k++) {
+    var cls = '';
+    if (boxes && boxes[k]) cls = hits && hits[k + 1] ? ' class="hit"' : ' class="on"';
+    cells.push('<i' + cls + '></i>');
+  }
+  g.innerHTML = cells.join('');
+}
+
+/* 100 prisoners: boxes[prisoner]=number inside. loop = follow permutation cycles. */
+function runPrisoners(i, useLoop) {
+  var N = 100, HALF = 50, TRIALS = 200;
+  var wins = 0;
+  var lastBoxes = null, lastHits = null;
+  for (var t = 0; t < TRIALS; t++) {
+    // random permutation of 1..100
+    var perm = [];
+    for (var k = 1; k <= N; k++) perm.push(k);
+    for (var j = perm.length - 1; j > 0; j--) {
+      var r = Math.floor(Math.random() * (j + 1));
+      var tmp = perm[j]; perm[j] = perm[r]; perm[r] = tmp;
+    }
+    var boxes = perm;             // boxes[b] = number inside box b (1-indexed values, 0-indexed array)
+    var allOk = true;
+    var hits = {};
+    if (useLoop) {
+      for (var p = 1; p <= N; p++) {
+        var cur = p, found = false;
+        for (var step = 0; step < HALF; step++) {
+          hits[cur] = true;
+          if (boxes[cur - 1] === p) { found = true; break; }
+          cur = boxes[cur - 1];
+        }
+        if (!found) { allOk = false; break; }
+      }
+    } else {
+      for (var p2 = 1; p2 <= N; p2++) {
+        var got = false;
+        for (var g2 = 0; g2 < HALF; g2++) {
+          var pick = 1 + Math.floor(Math.random() * N);
+          hits[pick] = true;
+          if (boxes[pick - 1] === p2) { got = true; break; }
+        }
+        if (!got) { allOk = false; break; }
+      }
+    }
+    if (allOk) wins++;
+    lastBoxes = boxes; lastHits = hits;
+  }
+  drawSimGrid(i, lastBoxes, lastHits);
+  var pct = (wins / TRIALS * 100).toFixed(1);
+  var st = document.getElementById('sims-' + i);
+  if (st) {
+    st.innerHTML = '<span>' + (useLoop ? 'Loop strategy' : 'Random strategy') + '</span>' +
+      '<span>success: <b class="' + (useLoop ? 'g' : 'r') + '">' + pct + '%</b></span>' +
+      '<span>trials: <b>' + TRIALS + '</b></span>' +
+      '<span>theory: <b>' + (useLoop ? '~31%' : '~0%') + '</b></span>';
+  }
+  var res = document.getElementById('res-' + i);
+  if (res) {
+    res.className = 'res ' + (useLoop ? 'ok' : 'no');
+    res.textContent = useLoop
+      ? 'Green = boxes opened by following cycles. ~31% of random permutations have no cycle longer than 50 - and then EVERY prisoner succeeds together.'
+      : 'Each prisoner alone gets 50%, but all 100 must succeed: (1/2)^100 - effectively zero. Coordination via cycles is the whole trick.';
+  }
 }
 
 function bootError(msg) {
