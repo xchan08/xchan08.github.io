@@ -110,18 +110,47 @@
   .simstats { font-family: "Space Grotesk"; font-size: 13.5px; color: var(--muted); display: flex; gap: 18px; flex-wrap: wrap; margin-top: 6px; }
   .simstats b { color: var(--fg); font-weight: 700; }
   .simstats .g { color: var(--accent2); } .simstats .r { color: var(--warn); }
-  @media (max-width: 820px) {
-    .rid-grid { grid-template-columns: 1fr; }
-    .rid.wide { grid-column: span 1; }
-    .simgrid { grid-template-columns: repeat(20, 1fr); }
+  /* ---------- RESPONSIVE (mobile-first, fluid) ----------
+     Grid tracks use minmax(0,1fr) so long content can never push the page wider than the screen. */
+  html, body { max-width: 100%; overflow-x: hidden; }
+  .wrap, nav { min-width: 0; }
+  .bento > * { min-width: 0; }
+  .bento { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .card { overflow-wrap: anywhere; }
+
+  @media (max-width: 900px) {
+    .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .hero, .skills, .exp, .achv, .riddles, .about, .contact { grid-column: 1 / -1; }
   }
-  @media (max-width: 820px) {
-    .bento { grid-template-columns: repeat(2, 1fr); }
-    .hero, .skills, .exp, .achv, .about, .contact { grid-column: span 2; }
-    .hero { flex-direction: column; text-align: center; }
+  @media (max-width: 600px) {
+    .wrap { padding: 20px 14px 56px; }
+    nav { padding: 12px 14px; flex-wrap: wrap; gap: 8px; }
+    nav .links a { margin-left: 14px; font-size: 13px; }
+    .bento { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .bento > .card { grid-column: 1 / -1; }
+    .card { padding: 20px; border-radius: 16px; }
+    .hero { flex-direction: column; text-align: center; padding: 28px 22px; gap: 18px; }
     .hero .cta { justify-content: center; }
-    .achv-grid { grid-template-columns: 1fr; }
-    .job { grid-template-columns: 1fr; gap: 4px; }
+    .hero h1 { font-size: 30px; }
+    .hero .tagline { margin-left: auto; margin-right: auto; }
+    .avatar { width: 92px; height: 92px; font-size: 32px; }
+    .stat .num { font-size: 28px; }
+    .skill-grid { grid-template-columns: minmax(0, 1fr); }
+    .skill-filters { flex-wrap: wrap; }
+    .job { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+    .achv-grid { grid-template-columns: minmax(0, 1fr); }
+    .rid-grid { grid-template-columns: minmax(0, 1fr); }
+    .rid.wide { grid-column: auto; }
+    .rid .row { flex-direction: column; align-items: stretch; }
+    .rid input { min-width: 0; width: 100%; }
+    .rbtn { flex: 1 1 auto; text-align: center; }
+    .simgrid { grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 3px; }
+    .simstats { gap: 10px; font-size: 12.5px; }
+    footer { font-size: 12px; }
+  }
+  @media (max-width: 360px) {
+    .hero h1 { font-size: 26px; }
+    nav .links a { margin-left: 10px; }
   }
 </style>
 </head>
