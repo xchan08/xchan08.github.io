@@ -1,35 +1,61 @@
 name: sync-sheet
+
+# Mirrors the published Google Sheet (Bio Site CMS) into data/*.csv.
+# Runs hourly + on demand (Actions tab > "sync-sheet" > Run workflow).
+
 on:
   schedule:
     - cron: "7 * * * *"
   workflow_dispatch: {}
+
+# One sync at a time, so two runs never race each other.
+concurrency:
+  group: sheet-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
 jobs:
   sync:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     env:
       PUB: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSoX9uKM797qISmK5m-5KHJkV9bWB8J7Bq9SaDNHC6qlt-FbpRb0E6O4MGgdHVGrhrbOUw82gLnMudf/pub"
     steps:
       - uses: actions/checkout@v4
-      - name: Fetch published CSVs (one per tab)
-        run: |
-          mkdir -p data
-          fetch() { curl -fsSL "$PUB?gid=$2&single=true&output=csv" -o "data/$1.csv"; }
-          fetch Profile      0
-          fetch Stats        1962668757
-          fetch Skills       366870875
-          fetch Experience   1068223889
-          fetch Achievements 4584789
-          wc -l data/*.csv
-      - name: Commit if changed
+
+      - name: Sync with retry (re-fetch and re-push if main moved)
         run: |
           git config user.name  "sheet-sync-bot"
           git config user.email "sheet-sync-bot@users.noreply.github.com"
-          git add data
-          if git diff --cached --quiet; then
-            echo "No sheet changes since last sync."
-            exit 0
-          fi
-          git commit -m "chore: sync bio data from sheet"
-          git push
+
+          fetch_csvs() {
+            mkdir -p data
+            fetch() { curl -fsSL "$PUB?gid=$2&single=true&output=csv" -o "data/$1.csv"; }
+            fetch Profile      0
+            fetch Stats        1962668757
+            fetch Skills       366870875
+            fetch Experience   1068223889
+            fetch Achievements 4584789
+          }
+
+          for attempt in 1 2 3 4 5; do
+            echo "== attempt $attempt =="
+            git fetch origin main
+            git reset --hard origin/main
+            fetch_csvs
+            git add data
+            if git diff --cached --quiet; then
+              echo "No sheet changes since last sync."
+              exit 0
+            fi
+            git commit -m "chore: sync bio data from sheet"
+            if git push origin HEAD:main; then
+              echo "Pushed."
+              exit 0
+            fi
+            echo "Push rejected (main moved). Retrying in 5s..."
+            sleep 5
+          done
+          echo "Gave up after 5 attempts."
+          exit 1
